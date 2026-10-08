@@ -121,7 +121,7 @@ brings it back.
 
 ## Kara's branch
 
-**Generator → Kara's branch** in the Randomizer bar switches the settings to
+**Generator → Kara's branch** (next to **Randomizer** at the top) switches the settings to
 Kara's: her presets (Default, Boots, CrossKeys, Super Quick, Mimic Hellrule,
 CrissCross Boss, Approximate Bunday, wjbCross, BossHunt Keys) and her settings,
 including door shuffle, overworld shuffle, entrance shuffle, pottery and drop

@@ -828,6 +828,9 @@ export function init() {
       shared = null; clearLink(); showShared(); $('r-seed').value = '';
     }
     applyGen();
+    // show the settings for the generator just picked
+    document.body.classList.add('rando-open');
+    $('r-toggle').setAttribute('aria-expanded', 'true');
   });
   $('r-stop').addEventListener('click', () => { Kara.cancel(); });
   $('r-base-input').addEventListener('change', async (ev) => {

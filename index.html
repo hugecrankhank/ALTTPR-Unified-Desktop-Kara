@@ -147,6 +147,18 @@
     vertical-align: 2px; background: no-repeat center / contain
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23e6e9ee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
   #r-toggle[aria-expanded=true]::after { transform: rotate(180deg); }
+  /* the generator picker beside it: same shape, border and chevron */
+  #gen-pick { display: inline-flex; align-items: center; border: 1px solid var(--accent); border-radius: 6px;
+    background: #0d1117; overflow: hidden; }
+  #gen-pick span { padding: 5px 0 5px 10px; color: var(--dim); font-size: 13px; }
+  #gen-pick select { -webkit-appearance: none; appearance: none; border: 0; border-radius: 0; background: transparent;
+    font-weight: 600; padding: 5px 30px 5px 8px; color: var(--text);
+    background: no-repeat right 10px center / 10px 6px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23e6e9ee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  #gen-pick select option { background: #0d1117; color: var(--text); font-weight: 400; }
+  #gen-pick:hover { border-color: var(--accent); background: #12261a; }
+  body.gen-kara #gen-pick { background: #12261a; }
+  body.gen-kara #gen-pick select { color: var(--accent); }
 
   main { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; grid-row: 3; }
   #game-wrap { position: relative; min-height: 0; display: flex; align-items: center; justify-content: center;
@@ -253,6 +265,13 @@
 <header>
   <h1>ALTTPR <span>Unified</span> Desktop</h1>
   <button id="r-toggle" aria-expanded="false" aria-controls="rando-bar" title="Show or hide the randomizer settings (they fold away by themselves when you go back to playing)">Randomizer</button>
+  <label id="gen-pick" title="Which generator makes your seeds. alttpr.com: the official generator (build 2024-02-18). Kara's branch: Kara's generator from alttpr.gwaa.kiwi (door, overworld and more shuffles), run in your browser.">
+    <span>Generator</span>
+    <select id="r-gen" aria-label="Generator">
+      <option value="alttpr" selected>alttpr.com</option>
+      <option value="kara">Kara's branch</option>
+    </select>
+  </label>
   <label class="filebtn" for="rom-input" title="Play a seed .sfc you already have, or pick your Japanese 1.0 ROM to randomize it">Load ROM…</label>
   <!-- No `accept` filter: iOS doesn't know the .sfc/.smc types and would gray
        the files out. The ROM is checked in JS after it's picked instead. -->
@@ -316,12 +335,6 @@
 <section id="rando-bar" aria-label="Randomizer settings">
   <div id="r-shared" role="status" hidden></div>
   <div class="group">
-    <label class="f" title="alttpr.com: the official generator (build 2024-02-18). Kara's branch: Kara's generator from alttpr.gwaa.kiwi (door, overworld and more shuffles), run in your browser.">Generator
-      <select id="r-gen">
-        <option value="alttpr" selected>alttpr.com</option>
-        <option value="kara">Kara's branch</option>
-      </select>
-    </label>
     <div id="r-kara" class="kara-only"></div>
     <label class="f vt-only">World state
       <select id="r-mode">
