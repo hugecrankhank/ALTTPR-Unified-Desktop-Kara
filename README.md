@@ -1,4 +1,10 @@
-# ALTTPR Unified Desktop — pop-out tracker windows for PC
+# ALTTPR Unified Desktop (Kara) — Kara's branch, generated in the browser
+
+This is the [Desktop edition](https://github.com/hugecrankhank/ALTTPR-Unified-Desktop)
+with one addition: seeds from **Kara's branch** (the generator behind
+[alttpr.gwaa.kiwi](https://alttpr.gwaa.kiwi/generate)), made right here in your
+browser with her settings and presets. See [Kara's branch](#karas-branch) below.
+Everything else is as in the Desktop edition, described from here on.
 
 This is the desktop edition of [ALTTPR Unified](https://github.com/hugecrankhank/ALTTPR-Unified),
 built on the [iPad edition](https://github.com/hugecrankhank/ALTTPR-Unified-iPad)
@@ -113,6 +119,60 @@ you go back to playing with it open: a click on the game, a controller button, o
 game key (typing in its boxes doesn't count). **Randomizer** at the top left
 brings it back.
 
+## Kara's branch
+
+**Generator → Kara's branch** in the Randomizer bar switches the settings to
+Kara's: her presets (Default, Boots, CrossKeys, Super Quick, Mimic Hellrule,
+CrissCross Boss, Approximate Bunday, wjbCross, BossHunt Keys) and her settings,
+including door shuffle, overworld shuffle, entrance shuffle, pottery and drop
+shuffle. The main ones are in the bar; the rest are under **More Kara settings**.
+Hover a setting for her help text. **Generate & Play** works as usual and uses
+the same Base ROM, sprite, MSU-1 pack and ROM options.
+
+How it works:
+
+- Her generator ([alttpr-python](https://git.gwaa.kiwi/alttpr-gwaa-kiwi/alttpr-python),
+  MIT, built on Aerinon's Door Randomizer and codemann8's Overworld Randomizer)
+  is in `randomizer/kara/alttpr-python`, pinned to the commit in
+  `randomizer/kara/index.js`. It runs in the browser on
+  [Pyodide](https://pyodide.org) (Python compiled for the web), in a worker so
+  the page stays responsive. Nothing goes to Kara's servers or anyone else's.
+- The first Kara seed downloads Python (about 15 MB, then cached). Python starts
+  in the background as soon as you pick Kara's branch, so it's usually ready by
+  the time you press Generate. A normal seed takes several seconds; big shuffles
+  (Approximate Bunday, say) can take a minute or more. **Stop** cancels.
+- The settings are turned into her generator's options the same way her server
+  does it (`randomizer/kara/settings.js`), including the extras it adds (tavern
+  shuffle, dungeon counters). Like her server, a random seed that can't be
+  finished with those settings is retried with a new random seed, up to five
+  times. A seed number you type is used as is.
+- The ROM is built the way her generator builds one: your Japanese 1.0 ROM, her
+  base patch (`data/base2current.bps` in her code), the seed, then your ROM
+  options and sprite.
+- **Seed and race links** work as for alttpr.com-style seeds. Kara links look
+  like `?gen=kara&seed=…&k=goal:fast_ganon,…`, and opening one switches the bar to
+  Kara's branch with the link's settings. The same seed and settings give the
+  same game for everyone (checked: same ROM byte for byte, in separate browsers),
+  so compare the five-item code as usual. Every seed is made in a fresh Python
+  with a fixed hash seed, which is what makes that work.
+- Seeds made here are not the same games as seeds made on alttpr.gwaa.kiwi with
+  the same number, because Python there runs on a different platform. Links
+  from her site (alttpr.gwaa.kiwi/seed/…) can't be loaded here: those seeds are
+  stored on her server.
+- **Tracker.** Hutch's tracker is told what it understands: world state,
+  shuffled maps, compasses and keys, universal keys, entrance shuffle, shops,
+  pottery, enemy drops, pseudo boots and the mirror scroll. It doesn't follow
+  door shuffle, overworld shuffle, flute spots or prize shuffle; the status line
+  says so when a seed uses them.
+- Only her main generator ("Base") is included, not her Beta, Pikit or April
+  2025 ones, or Mystery and multiworld.
+
+Updating to a newer version of her generator: replace `randomizer/kara/alttpr-python`
+with the new code (the same files as now), update `KARA_COMMIT` in
+`randomizer/kara/index.js`, and run `python3 tools/kara-data.py <her alttpr-frontend>/src/data
+randomizer/kara/settings-data.js` if her settings changed. Seed links made before
+the update say they came from another build.
+
 ## Seed links and races
 
 After **Generate & Play**, two buttons copy a link to that seed:
@@ -206,6 +266,10 @@ the browser blocks the tracker frames from talking to the page).
 cd ALTTPR-Unified-Desktop
 python3 -m http.server 8080      # or: npx serve .
 ```
+
+For **Kara's branch** on a local copy, first run `python3 tools/kara-bundle.py`
+(packs her generator) and `sh tools/fetch-pyodide.sh` (downloads Pyodide); the
+published site does both when it's deployed.
 
 Open http://localhost:8080. Then either:
 
@@ -331,9 +395,9 @@ AlttpBridge.peek(0x7EF340, 32)   // dump inventory bytes ($7EF340+)
 
 - **snes9x core only.** The bridge parses snes9x's state format; bsnes would
   need its own parser (or a custom core build exporting `retro_get_memory_data`).
-- **No Glitches only.** The in-app generator covers alttpr.com's No Glitches
-  options; for glitched logic or entrance shuffle, generate elsewhere and use
-  **Load ROM…**.
+- **No Glitches only.** The alttpr.com generator covers alttpr.com's No Glitches
+  options. Kara's branch adds entrance, door and overworld shuffle; for glitched
+  logic, generate elsewhere and use **Load ROM…**.
 - **Changing ROMs reloads the page.** EmulatorJS can't swap games in place.
 - Save files persist in the browser's IndexedDB (EmulatorJS default).
 
@@ -346,4 +410,11 @@ AlttpBridge.peek(0x7EF340, 32)   // dump inventory bytes ($7EF340+)
 - Randomizer: ported from [alttp_vt_randomizer](https://github.com/sporchia/alttp_vt_randomizer)
   by sporchia (MIT); base patch built from [z3randomizer](https://github.com/KatDevsGames/z3randomizer)
   (MIT). See `randomizer/LICENSE-THIRD-PARTY.md`.
+- Kara's branch: [alttpr-python](https://git.gwaa.kiwi/alttpr-gwaa-kiwi/alttpr-python)
+  by Kara (karafruit), MIT License (LLCoolDave's original license, carried by every fork since;
+  see `randomizer/kara/alttpr-python/LICENSE`), built on
+  [ALttPDoorRandomizer](https://github.com/aerinon/ALttPDoorRandomizer) by Aerinon and
+  [OverworldShuffle](https://github.com/codemann8/ALttPDoorRandomizer) by codemann8.
+  Settings, presets and help text from her [alttpr.gwaa.kiwi](https://alttpr.gwaa.kiwi/generate).
+  Runs on [Pyodide](https://pyodide.org) (MPL-2.0), downloaded when the site is deployed.
 - No ROMs are included. Use your own legally obtained copy.

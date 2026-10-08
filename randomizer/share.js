@@ -40,6 +40,7 @@ export function buildLink(seed, fields, race) {
 // otherBuild, problems: [what couldn't be applied] }.
 export function readLink(search, $) {
   const q = new URLSearchParams(search);
+  if (q.get('gen') === 'kara') return null;   // Kara's branch: randomizer/kara
   const seedText = q.get('seed');
   if (seedText === null || !/^\d{1,10}$/.test(seedText)) return null;
   const seed = Number(seedText) % 4294967296;
@@ -60,7 +61,7 @@ export function readLink(search, $) {
 export function clearLink() {
   try {
     const u = new URL(location.href);
-    ['seed', 'race', 'v', ...Object.keys(PARAMS)].forEach((k) => u.searchParams.delete(k));
+    ['seed', 'race', 'v', 'gen', 'k', ...Object.keys(PARAMS)].forEach((k) => u.searchParams.delete(k));
     history.replaceState(history.state, '', u.pathname + (u.search === '?' ? '' : u.search) + u.hash);
   } catch (e) {}
 }

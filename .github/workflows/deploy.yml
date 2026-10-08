@@ -36,6 +36,12 @@ jobs:
           else
             echo "Keeping the sprite list from the repository"; rm -f sprites.new.json
           fi
+      # Kara's branch: her generator packed for the browser, and the pinned
+      # Pyodide (Python for the browser) it runs on
+      - name: Pack Kara's generator
+        run: python3 tools/kara-bundle.py
+      - name: Download Pyodide
+        run: sh tools/fetch-pyodide.sh
       - uses: actions/configure-pages@v5
         with:
           enablement: true

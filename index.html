@@ -66,6 +66,14 @@
   #rando-bar .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   #r-generate { background: #1f6f3a; border-color: #2a8a4a; font-weight: 600; }
   #r-generate:disabled { opacity: .6; cursor: progress; }
+  /* the generator choice: alttpr.com's settings or Kara's */
+  body:not(.gen-kara) #rando-bar .kara-only, body.gen-kara #rando-bar .vt-only { display: none !important; }
+  #r-kara { display: contents; }
+  #r-kara-more-body { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  #rando-bar .kara-group { align-items: flex-end; }
+  #rando-bar .kara-group-title { flex-basis: 100%; color: var(--text); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .04em; margin-top: 4px; }
+  #r-kara-more .hint { margin: 8px 0 0; }
   #r-base-label.ok { color: var(--accent); }
   #r-base-input, #r-sprite-input, #r-msu-input { display: none; }
   #r-msu-name { text-transform: none; letter-spacing: 0; font-size: 12px; color: var(--text); max-width: 16em;
@@ -308,7 +316,14 @@
 <section id="rando-bar" aria-label="Randomizer settings">
   <div id="r-shared" role="status" hidden></div>
   <div class="group">
-    <label class="f">World state
+    <label class="f" title="alttpr.com: the official generator (build 2024-02-18). Kara's branch: Kara's generator from alttpr.gwaa.kiwi (door, overworld and more shuffles), run in your browser.">Generator
+      <select id="r-gen">
+        <option value="alttpr" selected>alttpr.com</option>
+        <option value="kara">Kara's branch</option>
+      </select>
+    </label>
+    <div id="r-kara" class="kara-only"></div>
+    <label class="f vt-only">World state
       <select id="r-mode">
         <option value="standard">Standard</option>
         <option value="open" selected>Open</option>
@@ -316,7 +331,7 @@
         <option value="retro">Retro</option>
       </select>
     </label>
-    <label class="f">Goal
+    <label class="f vt-only">Goal
       <select id="r-goal">
         <option value="ganon" selected>Defeat Ganon</option>
         <option value="fast_ganon">Fast Ganon</option>
@@ -327,21 +342,21 @@
         <option value="completionist">Completionist</option>
       </select>
     </label>
-    <label class="f">Open tower
+    <label class="f vt-only">Open tower
       <select id="r-tower">
         <option value="0">0 Crystals</option><option value="1">1 Crystal</option><option value="2">2 Crystals</option>
         <option value="3">3 Crystals</option><option value="4">4 Crystals</option><option value="5">5 Crystals</option>
         <option value="6">6 Crystals</option><option value="7" selected>7 Crystals</option><option value="random">Random</option>
       </select>
     </label>
-    <label class="f">Ganon vulnerable
+    <label class="f vt-only">Ganon vulnerable
       <select id="r-ganon">
         <option value="0">0 Crystals</option><option value="1">1 Crystal</option><option value="2">2 Crystals</option>
         <option value="3">3 Crystals</option><option value="4">4 Crystals</option><option value="5">5 Crystals</option>
         <option value="6">6 Crystals</option><option value="7" selected>7 Crystals</option><option value="random">Random</option>
       </select>
     </label>
-    <label class="f">Swords
+    <label class="f vt-only">Swords
       <select id="r-weapons">
         <option value="randomized" selected>Randomized</option>
         <option value="assured">Assured</option>
@@ -349,7 +364,7 @@
         <option value="swordless">Swordless</option>
       </select>
     </label>
-    <label class="f">Dungeon items
+    <label class="f vt-only">Dungeon items
       <select id="r-dungeon">
         <option value="standard" selected>Standard</option>
         <option value="mc">Maps/Compasses</option>
@@ -357,20 +372,20 @@
         <option value="full">Keysanity</option>
       </select>
     </label>
-    <label class="f">Item placement
+    <label class="f vt-only">Item placement
       <select id="r-placement">
         <option value="basic">Basic</option>
         <option value="advanced" selected>Advanced</option>
       </select>
     </label>
-    <label class="f">Accessibility
+    <label class="f vt-only">Accessibility
       <select id="r-access">
         <option value="items" selected>100% Inventory</option>
         <option value="locations">100% Locations</option>
         <option value="none">Beatable Only</option>
       </select>
     </label>
-    <label class="f">Item pool
+    <label class="f vt-only">Item pool
       <select id="r-pool">
         <option value="easy">Easy</option>
         <option value="normal" selected>Normal</option>
@@ -378,7 +393,7 @@
         <option value="expert">Expert</option>
       </select>
     </label>
-    <label class="f">Item functionality
+    <label class="f vt-only">Item functionality
       <select id="r-func">
         <option value="easy">Easy</option>
         <option value="normal" selected>Normal</option>
@@ -386,7 +401,7 @@
         <option value="expert">Expert</option>
       </select>
     </label>
-    <label class="f">Hints
+    <label class="f vt-only">Hints
       <select id="r-hints">
         <option value="on" selected>On</option>
         <option value="off">Off</option>
@@ -419,6 +434,15 @@
       <div id="r-sprite-sheet" hidden><canvas></canvas></div>
     </div>
   </div>
+  <details id="r-kara-more" class="kara-only">
+    <summary>More Kara settings</summary>
+    <div id="r-kara-more-body"></div>
+    <p class="hint">Settings, presets and help text (hover a setting) are from Kara's
+      <a href="https://alttpr.gwaa.kiwi/generate" target="_blank" rel="noopener">alttpr.gwaa.kiwi</a>. Her generator
+      (<a href="https://git.gwaa.kiwi/alttpr-gwaa-kiwi/alttpr-python" target="_blank" rel="noopener">alttpr-python</a>,
+      MIT license, built on Aerinon's Door Randomizer and codemann8's Overworld Randomizer) runs here in your browser.
+      The first seed loads Python (about 15&nbsp;MB, kept for next time). Big shuffles can take a minute or more.</p>
+  </details>
   <details>
     <summary>ROM options</summary>
     <div class="group">
@@ -465,6 +489,7 @@
     <label class="filebtn" id="r-base-label" for="r-base-input">Base ROM…</label>
     <input type="file" id="r-base-input">
     <button id="r-generate">Generate &amp; Play</button>
+    <button id="r-stop" type="button" hidden title="Stop making this seed">Stop</button>
     <button id="r-download" hidden>Download ROM</button>
     <button id="r-spoiler" hidden>Spoiler</button>
     <button id="r-share" type="button" hidden title="Copy a link that sets up this exact seed for someone else">&#128279; Share seed</button>
@@ -554,9 +579,18 @@
         + '&bossshuffle=' + encodeURIComponent(trackerExtra.bossshuffle || 'no')
         + '&enemizer=' + encodeURIComponent(trackerExtra.enemizer || 'no');
     }
+    // Kara's branch: more of the seed's settings the tracker understands
+    // (entrance shuffle, shops, pots, key drops, which dungeon items are out)
+    var more = '', entrance = 'no';
+    if (trackerExtra && trackerExtra.more) {
+      Object.keys(trackerExtra.more).forEach(function (k) {
+        if (k === 'entranceshuffle') entrance = trackerExtra.more[k];
+        else more += '&' + k + '=' + encodeURIComponent(trackerExtra.more[k]);
+      });
+    }
     return {
-      items: 'tracker/itemtracker.html?scale=1' + common + (trackerExtra ? '&swordless=' + encodeURIComponent(trackerExtra.swordless || 'no') + '&bossshuffle=' + encodeURIComponent(trackerExtra.bossshuffle || 'no') : ''),
-      map: 'tracker/map.html?zoom=0.6&logic=nmg&entranceshuffle=no&entrancemode=none' + common + mapExtra,
+      items: 'tracker/itemtracker.html?scale=1' + common + (trackerExtra ? '&swordless=' + encodeURIComponent(trackerExtra.swordless || 'no') + '&bossshuffle=' + encodeURIComponent(trackerExtra.bossshuffle || 'no') : '') + more,
+      map: 'tracker/map.html?zoom=0.6&logic=nmg&entranceshuffle=' + entrance + '&entrancemode=none' + common + mapExtra + more,
     };
   }
   function loadTrackers() {
@@ -924,6 +958,7 @@
         if (tracker.dungeonitems) $('dungeonitems').value = tracker.dungeonitems;
         trackerExtra = { swordless: tracker.swordless || 'no', gtcrystals: tracker.gtcrystals || '7',
           bossshuffle: tracker.bossshuffle || 'no', enemizer: tracker.enemizer || 'no' };
+        if (tracker.more) trackerExtra.more = tracker.more;
         saveSettings();
       }
       startRom(bytes, name, true);
