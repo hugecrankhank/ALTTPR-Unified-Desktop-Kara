@@ -135,17 +135,21 @@ async function buildBaseRom() {
   return { rom, baseOk: sum === BASE_MD5 };
 }
 
-function applyCosmetics(rom, { quickswap = true } = {}) {
+// menuSpeed: false for Kara's branch, whose site doesn't offer it (she asked
+// that nothing beyond her own site's options be written to her seeds)
+function applyCosmetics(rom, { quickswap = true, menuSpeed = true } = {}) {
   const w = (off, ...b) => b.forEach((v, i) => { rom[off + i] = v; });
   const beep = { off: 0x00, half: 0x40, quarter: 0x80, double: 0x10, normal: 0x20 }[$('r-heartbeep').value] ?? 0x40;
   w(0x180033, beep);
   w(0x18004B, quickswap && $('r-quickswap').value === 'on' ? 0x01 : 0x00);
-  const ms = $('r-menuspeed').value;
-  w(0x180048, { instant: 0xE8, fast: 0x10, normal: 0x08, slow: 0x04 }[ms] ?? 0x08);
-  const fast = ms === 'instant';
-  w(0x6DD9A, fast ? 0x20 : 0x11);
-  w(0x6DF2A, fast ? 0x20 : 0x12);
-  w(0x6E0E9, fast ? 0x20 : 0x12);
+  if (menuSpeed) {
+    const ms = $('r-menuspeed').value;
+    w(0x180048, { instant: 0xE8, fast: 0x10, normal: 0x08, slow: 0x04 }[ms] ?? 0x08);
+    const fast = ms === 'instant';
+    w(0x6DD9A, fast ? 0x20 : 0x11);
+    w(0x6DF2A, fast ? 0x20 : 0x12);
+    w(0x6E0E9, fast ? 0x20 : 0x12);
+  }
   w(0x18021A, 0x00);   // music on
   w(0x18017F, 0x00);   // reduce flashing off
 }
@@ -496,7 +500,7 @@ async function generateKara() {
       }
     }
     const rom = Kara.patchRom(base, res.patch);
-    applyCosmetics(rom);
+    applyCosmetics(rom, { menuSpeed: false });
     if (msu.count) rom[0x18021A] = 0x01;
     const sprite = await kvGet('sprite').catch(() => null);
     if (sprite && sprite.bytes) {
