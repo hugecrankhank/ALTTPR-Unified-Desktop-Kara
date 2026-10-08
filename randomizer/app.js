@@ -17,7 +17,7 @@ const $ = (id) => document.getElementById(id);
 // ── tiny IndexedDB key/value store (ROMs never leave the device) ──────────────
 function idb() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('alttpr-unified-desktop', 1);
+    const req = indexedDB.open('alttpr-unified-kara', 1);
     req.onupgradeneeded = () => req.result.createObjectStore('kv');
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -72,12 +72,12 @@ function readSettings() {
 function saveFields() {
   const o = {};
   FIELDS.forEach((id) => { if ($(id)) o[id] = $(id).value; });
-  try { localStorage.setItem('unified-desktop-fields', JSON.stringify(o)); } catch (e) {}
+  try { localStorage.setItem('unified-kara-fields', JSON.stringify(o)); } catch (e) {}
 }
 
 function loadFields() {
   let o = {};
-  try { o = JSON.parse(localStorage.getItem('unified-desktop-fields') || '{}'); } catch (e) {}
+  try { o = JSON.parse(localStorage.getItem('unified-kara-fields') || '{}'); } catch (e) {}
   FIELDS.forEach((id) => {
     const el = $(id);
     if (el && o[id] != null && [...el.options].some((op) => op.value === o[id])) el.value = o[id];
@@ -385,7 +385,7 @@ async function generateAndPlay() {
     // remember it across the reload EmulatorJS needs to switch games
     document.body.classList.remove('rando-open');
     $('r-toggle').setAttribute('aria-expanded', 'false');
-    try { localStorage.setItem('unified-desktop-open', '0'); } catch (e) {}
+    try { localStorage.setItem('unified-kara-open', '0'); } catch (e) {}
     // keep it across the page reload EmulatorJS needs when switching games
     try { await kvSet('last-seed', last); } catch (e) {}
 
@@ -447,7 +447,7 @@ async function playAlttprSeed(id) {
       (code ? `, code ${codeNames(code).join(' / ')}` : ''), 'ok');
     document.body.classList.remove('rando-open');
     $('r-toggle').setAttribute('aria-expanded', 'false');
-    try { localStorage.setItem('unified-desktop-open', '0'); } catch (e) {}
+    try { localStorage.setItem('unified-kara-open', '0'); } catch (e) {}
     try { await kvSet('last-seed', last); } catch (e) {}
     window.UnifiedApp.playRom(rom, name, {
       gamemode: ALTTPR_MODES.includes(m.mode) ? m.mode : 'open',
@@ -704,7 +704,7 @@ export function init() {
   $('r-toggle').addEventListener('click', () => {
     const open = document.body.classList.toggle('rando-open');
     $('r-toggle').setAttribute('aria-expanded', String(open));
-    try { localStorage.setItem('unified-desktop-open', open ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('unified-kara-open', open ? '1' : '0'); } catch (e) {}
   });
   // While a game is running, the settings bar folds itself away as soon as
   // you go back to playing: a click on the game, a controller button, or a
@@ -716,7 +716,7 @@ export function init() {
     if (!$('sprite-lib').hidden) return;
     document.body.classList.remove('rando-open');
     $('r-toggle').setAttribute('aria-expanded', 'false');
-    try { localStorage.setItem('unified-desktop-open', '0'); } catch (e) {}
+    try { localStorage.setItem('unified-kara-open', '0'); } catch (e) {}
     setTimeout(() => window.dispatchEvent(new Event('resize')), 30);
   }
   $('game-wrap').addEventListener('pointerdown', foldForPlay, true);
@@ -736,7 +736,7 @@ export function init() {
   }, 200);
 
   let open = true;
-  try { open = localStorage.getItem('unified-desktop-open') !== '0'; } catch (e) {}
+  try { open = localStorage.getItem('unified-kara-open') !== '0'; } catch (e) {}
   document.body.classList.toggle('rando-open', open);
   $('r-toggle').setAttribute('aria-expanded', String(open));
   refreshBaseStatus();

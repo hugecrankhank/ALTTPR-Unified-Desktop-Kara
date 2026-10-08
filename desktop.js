@@ -46,9 +46,9 @@
     map: [{ name: 'map-top', sel: '#topbar', slot: 'top', order: 0 },
           { name: 'map-bottom', sel: '#bottombar', slot: 'bot', order: 0 }],
   };
-  var STATE_KEY = 'unified-desktop-windows';  // { place: {piece: id}, wins: {id: tracker} }
-  var GEOM_KEY = 'unified-desktop-geom-';     // + window id: size and place
-  var WIDTH_KEY = 'unified-desktop-dock-w';   // width of the tracker column
+  var STATE_KEY = 'unified-kara-windows';  // { place: {piece: id}, wins: {id: tracker} }
+  var GEOM_KEY = 'unified-kara-geom-';     // + window id: size and place
+  var WIDTH_KEY = 'unified-kara-dock-w';   // width of the tracker column
   var DEFAULT_SIZE = { items: { w: 640, h: 200 }, dungeons: { w: 760, h: 150 }, light: { w: 480, h: 500 }, dark: { w: 480, h: 500 } };
 
   // A new id for every load of this page; pop-outs use it to notice a reload.
@@ -113,8 +113,8 @@
       return { name: b.name, el: DP.querySelector.call(d, b.sel), slot: b.slot, order: b.order };
     }).filter(function (b) { return b.el; });
     if (missing) { if (tries < 60) setTimeout(function () { resolve(kind, tries + 1); }, 100); return; }
-    if (kind === 'items' && !DP.getElementById.call(d, 'unified-desktop-css')) {
-      var st = d.createElement('style'); st.id = 'unified-desktop-css'; st.textContent = ENGINE_CSS;
+    if (kind === 'items' && !DP.getElementById.call(d, 'unified-kara-css')) {
+      var st = d.createElement('style'); st.id = 'unified-kara-css'; st.textContent = ENGINE_CSS;
       d.head.appendChild(st);
     }
     e.pieces = found; e.bars = bars;

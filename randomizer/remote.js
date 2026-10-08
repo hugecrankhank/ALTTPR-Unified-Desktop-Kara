@@ -11,7 +11,7 @@
 import { md5 } from './md5.js';
 import { applyBps } from './bps.js';
 
-const RELAY_KEY = 'unified-desktop-relay';
+const RELAY_KEY = 'unified-kara-relay';
 // The relay everyone uses unless they set their own (ROM options).
 export const DEFAULT_RELAY = 'https://alttpr-relay.hugecrankhank.workers.dev';
 

@@ -36,7 +36,7 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var KEY = 'unified-desktop-layout';
+  var KEY = 'unified-kara-layout';
   var GAP_KEY = 'alttp-mobile-gap';   // Hutch's key (js/mobile.js)
   var on = null;           // 'tablet', 'portrait' or false (classic); null until first load
   var urls = null;

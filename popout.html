@@ -97,8 +97,8 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var id = new URLSearchParams(location.search).get('id') || 'items';
-  var PREF_KEY = 'unified-desktop-pop-' + id;
-  var GEOM_KEY = 'unified-desktop-geom-' + id;
+  var PREF_KEY = 'unified-kara-pop-' + id;
+  var GEOM_KEY = 'unified-kara-geom-' + id;
   var pf = $('pf');
   var info = null;          // what the main window says this window holds
 
@@ -166,7 +166,7 @@
     var a = api(), r;
     if (!a) {
       lost++;
-      if (!main()) message('The game window was closed. Open ALTTPR Unified Desktop again and pop pieces out from there.');
+      if (!main()) message('The game window was closed. Open ALTTPR Unified Desktop (Kara) again and pop pieces out from there.');
       else if (lost > 3) message('Waiting for the game window…');
       return;
     }

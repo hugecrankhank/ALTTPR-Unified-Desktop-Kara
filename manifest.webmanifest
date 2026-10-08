@@ -1,6 +1,6 @@
 {
-  "name": "ALTTPR Unified Desktop",
-  "short_name": "ALTTPR Desktop",
+  "name": "ALTTPR Unified Desktop (Kara)",
+  "short_name": "ALTTPR Kara",
   "description": "A Link to the Past Randomizer emulator with a built-in seed generator and the Hutch item and map tracker, with tracker panels you can pop out into their own windows.",
   "id": "./",
   "start_url": "./",

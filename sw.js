@@ -5,7 +5,7 @@
  * from its CDN are cached as they load, so a game you've already run once can
  * start without a connection.
  */
-const CACHE = 'alttpr-unified-desktop-v1';
+const CACHE = 'alttpr-unified-kara-v1';
 const CDN = 'https://cdn.emulatorjs.org/';
 
 self.addEventListener('install', (e) => {
@@ -13,7 +13,7 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('alttpr-unified-desktop-') && k !== CACHE).map((k) => caches.delete(k))))
+  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('alttpr-unified-kara-') && k !== CACHE).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', (e) => {

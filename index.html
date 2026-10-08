@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ALTTPR Unified Desktop</title>
+<title>ALTTPR Unified Desktop (Kara)</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#161b22">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -532,7 +532,7 @@
 
   // ── settings → tracker URLs ───────────────────────────────────────────────
   var saved = {};
-  try { saved = JSON.parse(localStorage.getItem('unified-desktop-settings') || '{}'); } catch (e) {}
+  try { saved = JSON.parse(localStorage.getItem('unified-kara-settings') || '{}'); } catch (e) {}
   $('gamemode').value = saved.gamemode || 'open';
   $('dungeonitems').value = saved.dungeonitems || 'standard';
 
@@ -540,7 +540,7 @@
   // GT crystal requirement). Cleared when a ROM is loaded from a file.
   var trackerExtra = saved.extra || null;
   function saveSettings() {
-    localStorage.setItem('unified-desktop-settings', JSON.stringify({
+    localStorage.setItem('unified-kara-settings', JSON.stringify({
       gamemode: $('gamemode').value, dungeonitems: $('dungeonitems').value, extra: trackerExtra }));
   }
   function trackerUrls() {
@@ -853,7 +853,7 @@
   function foldRando() {
     document.body.classList.remove('rando-open');
     var t = $('r-toggle'); if (t) t.setAttribute('aria-expanded', 'false');
-    try { localStorage.setItem('unified-desktop-open', '0'); } catch (e) {}
+    try { localStorage.setItem('unified-kara-open', '0'); } catch (e) {}
   }
   function startRom(bytes, name, reloadTrackers) {
     foldRando();
@@ -875,7 +875,7 @@
   }
   function idbOpen() {
     return new Promise(function (resolve, reject) {
-      var r = indexedDB.open('alttpr-unified-desktop', 1);
+      var r = indexedDB.open('alttpr-unified-kara', 1);
       r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
       r.onsuccess = function () { resolve(r.result); };
       r.onerror = function () { reject(r.error); };
