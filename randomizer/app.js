@@ -443,6 +443,8 @@ function setGen(g) {
 function applyGen() {
   const kara = isKara();
   document.body.classList.toggle('gen-kara', kara);
+  $('r-gen-name').textContent = kara ? ' · Kara\'s branch' : ' · alttpr.com';
+  document.querySelectorAll('#r-gen-menu [data-gen]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.gen === $('r-gen').value)));
   // start Python in the background, so the first Kara seed is quicker
   clearTimeout(applyGen.t);
   if (kara) applyGen.t = setTimeout(Kara.prewarm, 800);
@@ -833,6 +835,37 @@ export function init() {
     $('r-toggle').setAttribute('aria-expanded', 'true');
   });
   $('r-stop').addEventListener('click', () => { Kara.cancel(); });
+  // the arrow beside Randomizer: a small menu to pick the generator
+  const genMenu = $('r-gen-menu'), genBtn = $('r-gen-btn');
+  const items = () => [...genMenu.querySelectorAll('[data-gen]')];
+  function menu(open) {
+    genMenu.hidden = !open;
+    genBtn.setAttribute('aria-expanded', String(open));
+    if (open) (items().find((b) => b.getAttribute('aria-checked') === 'true') || items()[0]).focus();
+  }
+  genBtn.addEventListener('click', () => menu(genMenu.hidden));
+  items().forEach((b) => b.addEventListener('click', () => {
+    menu(false);
+    genBtn.focus();
+    if ($('r-gen').value === b.dataset.gen) {   // same one: just show its settings
+      document.body.classList.add('rando-open');
+      $('r-toggle').setAttribute('aria-expanded', 'true');
+      return;
+    }
+    $('r-gen').value = b.dataset.gen;
+    $('r-gen').dispatchEvent(new Event('change'));
+  }));
+  document.addEventListener('pointerdown', (e) => { if (!genMenu.hidden && !e.target.closest('#rando-split')) menu(false); }, true);
+  // a click in a tracker or the game (their own frames) doesn't reach this page
+  window.addEventListener('blur', () => { if (!genMenu.hidden) menu(false); });
+  genMenu.addEventListener('keydown', (e) => {
+    const list = items(), i = list.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); menu(false); genBtn.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      list[(i + (e.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length].focus();
+    }
+  });
   $('r-base-input').addEventListener('change', async (ev) => {
     const f = ev.target.files && ev.target.files[0];
     ev.target.value = '';
@@ -871,7 +904,7 @@ export function init() {
   document.addEventListener('keydown', (e) => {
     const t = e.target;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (t && t.closest && t.closest('#sprite-lib, input, select, textarea')) return;
+    if (t && t.closest && t.closest('#sprite-lib, #rando-split, input, select, textarea')) return;
     // (a button still focused from the bar would otherwise take Space/Enter)
     if (document.body.classList.contains('rando-open') && gameRunning() && t && t.tagName === 'BUTTON') t.blur();
     foldForPlay();

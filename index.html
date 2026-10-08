@@ -147,18 +147,32 @@
     vertical-align: 2px; background: no-repeat center / contain
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23e6e9ee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
   #r-toggle[aria-expanded=true]::after { transform: rotate(180deg); }
-  /* the generator picker beside it: same shape, border and chevron */
-  #gen-pick { display: inline-flex; align-items: center; border: 1px solid var(--accent); border-radius: 6px;
-    background: #0d1117; overflow: hidden; }
-  #gen-pick span { padding: 5px 0 5px 10px; color: var(--dim); font-size: 13px; }
-  #gen-pick select { -webkit-appearance: none; appearance: none; border: 0; border-radius: 0; background: transparent;
-    font-weight: 600; padding: 5px 30px 5px 8px; color: var(--text);
-    background: no-repeat right 10px center / 10px 6px
+  /* Randomizer and the generator picker as one split button: the words show
+     or hide the settings bar, the arrow picks the generator */
+  #rando-split { position: relative; display: inline-flex; }
+  #rando-split #r-toggle { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  #rando-split #r-toggle::after { display: none; }
+  #r-gen-name { color: var(--dim); font-weight: 400; }
+  body.gen-kara #r-gen-name { color: var(--accent); font-weight: 600; }
+  body.gen-kara #rando-split > button { border-color: var(--accent); }
+  #r-gen-btn { border-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 5px 10px;
+    position: relative; }
+  #r-gen-btn::before { content: ''; position: absolute; left: 0; top: 5px; bottom: 5px; border-left: 1px solid var(--line); }
+  #r-toggle[aria-expanded=true] + #r-gen-btn { border-color: var(--accent); }
+  #r-gen-btn::after { content: ''; display: inline-block; width: 10px; height: 6px; vertical-align: 2px;
+    background: no-repeat center / contain
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23e6e9ee' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-  #gen-pick select option { background: #0d1117; color: var(--text); font-weight: 400; }
-  #gen-pick:hover { border-color: var(--accent); background: #12261a; }
-  body.gen-kara #gen-pick { background: #12261a; }
-  body.gen-kara #gen-pick select { color: var(--accent); }
+  #r-gen-btn[aria-expanded=true]::after { transform: rotate(180deg); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  #r-gen-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; min-width: 100%; padding: 4px;
+    display: flex; flex-direction: column; gap: 2px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+  #r-gen-menu[hidden] { display: none; }
+  #r-gen-menu button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left;
+    border: 0; background: transparent; padding: 6px 10px 6px 28px; position: relative; white-space: nowrap; }
+  #r-gen-menu button:hover, #r-gen-menu button:focus-visible { background: #1b2430; outline: none; }
+  #r-gen-menu button small { color: var(--dim); font-size: 11px; }
+  #r-gen-menu button[aria-checked=true]::before { content: '\2713'; position: absolute; left: 10px; top: 6px; color: var(--accent); }
 
   main { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; grid-row: 3; }
   #game-wrap { position: relative; min-height: 0; display: flex; align-items: center; justify-content: center;
@@ -264,14 +278,19 @@
 <body>
 <header>
   <h1>ALTTPR <span>Unified</span> Desktop</h1>
-  <button id="r-toggle" aria-expanded="false" aria-controls="rando-bar" title="Show or hide the randomizer settings (they fold away by themselves when you go back to playing)">Randomizer</button>
-  <label id="gen-pick" title="Which generator makes your seeds. alttpr.com: the official generator (build 2024-02-18). Kara's branch: Kara's generator from alttpr.gwaa.kiwi (door, overworld and more shuffles), run in your browser.">
-    <span>Generator</span>
-    <select id="r-gen" aria-label="Generator">
+  <div id="rando-split">
+    <button id="r-toggle" aria-expanded="false" aria-controls="rando-bar" title="Show or hide the randomizer settings (they fold away by themselves when you go back to playing)">Randomizer<span id="r-gen-name"> · alttpr.com</span></button>
+    <button id="r-gen-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="r-gen-menu" title="Choose the generator"><span class="sr">Choose the generator</span></button>
+    <div id="r-gen-menu" role="menu" hidden>
+      <button type="button" role="menuitemradio" data-gen="alttpr" aria-checked="true"><b>alttpr.com</b><small>The official generator (build 2024-02-18)</small></button>
+      <button type="button" role="menuitemradio" data-gen="kara" aria-checked="false"><b>Kara's branch</b><small>alttpr.gwaa.kiwi: door, overworld and more shuffles</small></button>
+    </div>
+    <!-- the generator choice itself (randomizer/app.js reads it); the menu above sets it -->
+    <select id="r-gen" hidden aria-hidden="true" tabindex="-1">
       <option value="alttpr" selected>alttpr.com</option>
       <option value="kara">Kara's branch</option>
     </select>
-  </label>
+  </div>
   <label class="filebtn" for="rom-input" title="Play a seed .sfc you already have, or pick your Japanese 1.0 ROM to randomize it">Load ROM…</label>
   <!-- No `accept` filter: iOS doesn't know the .sfc/.smc types and would gray
        the files out. The ROM is checked in JS after it's picked instead. -->
