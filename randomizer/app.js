@@ -246,6 +246,9 @@ function showLast() {
   if (last && last.alttpr) {
     $('r-seed-out').textContent = `alttpr.com seed ${last.alttpr}`;
     $('r-seed-out').title = 'Paste this id, or its alttpr.com link, to load the same seed again';
+  } else if (last && last.gwaa) {
+    $('r-seed-out').textContent = `Kara ${last.race ? 'race seed' : 'seed'} ${last.gwaa}`;
+    $('r-seed-out').title = 'A seed from Kara\'s server: its link opens on her site, and pasting it here loads it again';
   } else if (last && last.kara) {
     $('r-seed-out').textContent = `Kara ${last.race ? 'race seed' : 'seed'} ${last.spoiler.seed}`;
     $('r-seed-out').title = last.race ? 'A race seed: its spoiler stays hidden'
@@ -255,9 +258,9 @@ function showLast() {
     $('r-seed-out').title = last && last.race ? 'A race seed: its spoiler stays hidden'
       : 'Type this number in the seed box to get the same game again';
   }
-  const canShare = live && (!!last.fields || !!last.alttpr || !!last.kara);
+  const canShare = live && (!!last.fields || !!last.alttpr || !!last.kara || !!last.gwaa);
   $('r-share').hidden = !canShare;
-  $('r-share-race').hidden = !canShare || !!last.alttpr;   // an alttpr.com seed's link is the link
+  $('r-share-race').hidden = !canShare || !!last.alttpr || !!last.gwaa;   // their link is the link   // an alttpr.com seed's link is the link
   const code = playing ? playing.code : (last ? (last.code || (last.alttpr ? null : codeForSeed(last.spoiler.seed))) : null);
   renderCode($('r-code'), code);
 }
@@ -272,9 +275,10 @@ function noteRom(bytes, name) {
 async function copyLink(race) {
   if (!last || (!last.fields && !last.alttpr && !last.kara)) return;
   const url = last.alttpr ? `https://alttpr.com/h/${last.alttpr}`
+    : last.gwaa ? Kara.siteLink(last.gwaa)
     : last.kara ? Kara.buildLink(last.spoiler.seed, last.kara, race)
       : buildLink(last.spoiler.seed, last.fields, race);
-  const what = last.alttpr ? 'alttpr.com link' : race ? 'Race link' : 'Seed link';
+  const what = last.alttpr ? 'alttpr.com link' : last.gwaa ? 'Kara seed link' : race ? 'Race link' : 'Seed link';
   try {
     await navigator.clipboard.writeText(url);
     status(`${what} copied. Anyone who opens it gets the same game (they need their own base ROM).` +
@@ -451,7 +455,7 @@ function applyGen() {
   document.querySelectorAll('#r-gen-menu [data-gen]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.gen === $('r-gen').value)));
   // start Python in the background, so the first Kara seed is quicker
   clearTimeout(applyGen.t);
-  if (kara) applyGen.t = setTimeout(Kara.prewarm, 800);
+  if (kara && karaUi && karaUi.where() === 'browser') applyGen.t = setTimeout(Kara.prewarm, 800);
   else Kara.discardWarm();
 }
 
@@ -460,7 +464,16 @@ function karaSeed() {
   return Math.floor(randomSeed() / 4294967296 * 1000000000);
 }
 
-async function generateKara() {
+async function generateKara({ local = false, note = '' } = {}) {
+  if (!local && karaUi.where() === 'server' && parseSeed($('r-seed').value) === null && !(shared && shared.kara)) {
+    const settings = karaUi.get(), race = karaUi.race();
+    saveFields(); karaUi.hold(false); karaUi.save();
+    return playGwaa(null, {
+      settings, race,
+      // her server out of reach: make a normal seed here instead (never a race one)
+      fallback: race ? null : () => generateKara({ local: true, note: 'Kara\'s server couldn\'t be reached, so this seed was made in your browser. ' }),
+    });
+  }
   if (msu.count) msu.unlock();
   const btn = $('r-generate');
   if (btn.disabled) return;
@@ -514,7 +527,7 @@ async function generateKara() {
     playing = null;
     showLast();
     const gaps = Kara.trackerGaps(settings);
-    status(`Ready: Kara seed ${seed}` + (code ? `, code ${codeNames(code).join(' / ')}` : '') + ` (${(res.ms / 1000).toFixed(1)}s)` +
+    status(note + `Ready: Kara seed ${seed}` + (code ? `, code ${codeNames(code).join(' / ')}` : '') + ` (${(res.ms / 1000).toFixed(1)}s)` +
       (gaps.length ? `. The tracker doesn't follow ${gaps.join(', ')}.` : '') +
       (ok ? '' : ' Note: the base ROM check didn\'t match Kara\'s build; report it if anything looks off.'), ok ? 'ok' : 'bad');
     document.body.classList.remove('rando-open');
@@ -530,8 +543,71 @@ async function generateKara() {
     btn.disabled = false;
     $('r-stop').hidden = true;
     // a fresh Python for the next seed
-    setTimeout(() => { if (isKara()) Kara.prewarm(); }, 1500);
+    setTimeout(() => { if (isKara() && karaUi.where() === 'browser') Kara.prewarm(); }, 1500);
   }
+}
+
+// A seed from Kara's server: a new one from these settings (id null), or one
+// by its id (a link from her site).
+let karaAbort = null;
+async function playGwaa(id, { settings = null, race = false, fallback = null } = {}) {
+  if (msu.count) msu.unlock();
+  const btn = $('r-generate');
+  if (btn.disabled) return;
+  if (!(await refreshBaseStatus())) {
+    status('First choose your Japanese 1.0 ROM with the Base ROM button.', 'bad');
+    $('r-base-input').click();
+    return;
+  }
+  btn.disabled = true;
+  $('r-stop').hidden = false;
+  karaAbort = new AbortController();
+  const signal = karaAbort.signal;
+  const started = Date.now();
+  let stage = id ? `Getting Kara seed ${id}…` : `Asking Kara's server for a ${race ? 'race ' : ''}seed…`;
+  const show = () => status(`${stage} ${Math.round((Date.now() - started) / 1000)}s`);
+  const tick = setInterval(show, 1000);
+  show();
+  let fellBack = false;
+  try {
+    if (!id) id = await Kara.serverGenerate(settings, race, signal);
+    const data = await Kara.serverSeed(id, { signal, onWait: () => { stage = `Kara's server is making seed ${id}…`; } });
+    stage = 'Building the ROM…';
+    const jp = await kvGet('base-jp10');
+    const rom = Kara.serverRom(jp, data);
+    const s = Kara.normalize(data.settings || {});
+    const isRace = !!data.settings && data.settings.race === 'race';
+    applyCosmetics(rom, { menuSpeed: false });
+    if (msu.count) rom[0x18021A] = 0x01;
+    const sprite = await kvGet('sprite').catch(() => null);
+    if (sprite && sprite.bytes) {
+      try { applySprite(rom, parseSprite(sprite.bytes)); } catch (e) { console.warn('[randomizer] sprite skipped:', e); }
+    }
+    updateChecksum(rom);
+    const code = codeFromRom(rom);
+    const name = `GK_${id}.sfc`;
+    last = { rom, name, gwaa: id, kara: s, code, race: isRace, spoiler: { ...(data.spoiler || {}), seed: id } };
+    playing = null;
+    showLast();
+    const gaps = Kara.trackerGaps(s);
+    status(`Ready: Kara ${isRace ? 'race seed' : 'seed'} ${id}` + (code ? `, code ${codeNames(code).join(' / ')}` : '') +
+      (gaps.length ? `. The tracker doesn't follow ${gaps.join(', ')}.` : ''), 'ok');
+    document.body.classList.remove('rando-open');
+    $('r-toggle').setAttribute('aria-expanded', 'false');
+    try { localStorage.setItem('unified-kara-open', '0'); } catch (e) {}
+    try { await kvSet('last-seed', last); } catch (e) {}
+    window.UnifiedApp.playRom(rom, name, Kara.trackerFor(s));
+  } catch (e) {
+    if (e.cancelled) status('Stopped.', '');
+    else if (e.unreachable && fallback) fellBack = true;
+    else { console.error(e); status(String(e.message || e), 'bad'); }
+  } finally {
+    clearInterval(tick);
+    karaAbort = null;
+    btn.disabled = false;
+    $('r-stop').hidden = true;
+  }
+  if (fellBack) fallback();
 }
 
 // ── an alttpr.com seed, played here ──────────────────────────────────────────
@@ -606,6 +682,8 @@ function loadPasted(text) {
   if (!text) { status('Paste a seed link, an alttpr.com link, or a seed number.', 'bad'); return false; }
   let url = null;
   try { url = new URL(text); } catch (e) {}
+  const gk = Kara.gwaaId(text);
+  if (gk) { setGen('kara'); playGwaa(gk); return true; }
   if (url && url.searchParams.get('gen') === 'kara') {
     const k = Kara.readLink(url.search);
     if (!k) { status('That link doesn\'t have a seed in it.', 'bad'); return false; }
@@ -807,8 +885,8 @@ export function init() {
     const text = (e.clipboardData && e.clipboardData.getData('text')) || '';
     let isLink = false;
     try { isLink = new URL(text.trim()).searchParams.has('seed'); } catch (x) {}
-    if (!isLink && !alttprId(text) ) return;
-    if (!/alttpr\.com|[?&]seed=/.test(text)) return;   // a bare id or number only from the box
+    if (!isLink && !alttprId(text) && !Kara.gwaaId(text)) return;
+    if (!/alttpr\.com|alttpr\.gwaa\.kiwi\/seed\/|[?&]seed=/.test(text)) return;   // a bare id or number only from the box
     e.preventDefault();
     loadPasted(text);
   });
@@ -838,7 +916,8 @@ export function init() {
     document.body.classList.add('rando-open');
     $('r-toggle').setAttribute('aria-expanded', 'true');
   });
-  $('r-stop').addEventListener('click', () => { Kara.cancel(); });
+  $('r-stop').addEventListener('click', () => { if (karaAbort) karaAbort.abort(); Kara.cancel(); });
+  karaUi.onWhere(applyGen);
   // the arrow beside Randomizer: a small menu to pick the generator
   const genMenu = $('r-gen-menu'), genBtn = $('r-gen-btn');
   const items = () => [...genMenu.querySelectorAll('[data-gen]')];

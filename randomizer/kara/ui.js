@@ -5,6 +5,23 @@
 import { SETTINGS, PRESETS, normalize, presetSettings, presetOf } from './index.js';
 
 const STORE = 'unified-kara-gk-settings';
+const WHERE_STORE = 'unified-kara-gk-where';
+
+// Where seeds are made, and (on her server) normal or race. A plain select
+// with tooltips, like the settings.
+function choice(id, label, tip, options, value, onChange) {
+  const l = document.createElement('label');
+  l.className = 'f';
+  l.append(label);
+  l.title = tip;
+  const sel = document.createElement('select');
+  sel.id = id;
+  options.forEach(([v, text, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = text; if (t) o.title = t; sel.appendChild(o); });
+  sel.value = value;
+  sel.addEventListener('change', onChange);
+  l.appendChild(sel);
+  return l;
+}
 
 const MAIN = ['mode', 'weapons', 'goal', 'crystals_ganon', 'crystals_gt', 'entrance_shuffle', 'door_shuffle',
   'small_keys', 'big_keys', 'boss_shuffle', 'enemy_shuffle', 'hints'];
@@ -52,6 +69,24 @@ function field(def, onChange) {
 export function buildUi(main, more) {
   const fields = {};
   let saving = true;
+
+  let saved0 = {};
+  try { saved0 = JSON.parse(localStorage.getItem(WHERE_STORE) || '{}') || {}; } catch (e) {}
+  const saveWhere = () => {
+    try { localStorage.setItem(WHERE_STORE, JSON.stringify({ where: where.querySelector('select').value, race: race.querySelector('select').value })); } catch (e) {}
+    race.hidden = where.querySelector('select').value !== 'server';
+    if (onWhere) onWhere();
+  };
+  let onWhere = null;
+  const where = choice('rk-where', 'Made by',
+    'Kara\'s server: the same seeds her site makes, and race seeds with the spoiler locked on her server. '
+    + 'This browser: her generator runs here, no server needed (race links are honor system).',
+    [['server', 'Kara\'s server'], ['browser', 'This browser']], saved0.where === 'browser' ? 'browser' : 'server', () => saveWhere());
+  const race = choice('rk-race', 'Seed type',
+    'Race: made with her race setting; the spoiler stays on her server and nobody can see it.',
+    [['normal', 'Normal'], ['race', 'Race']], saved0.race === 'race' ? 'race' : 'normal', () => saveWhere());
+  race.hidden = where.querySelector('select').value !== 'server';
+  main.append(where, race);
 
   const presetLabel = document.createElement('label');
   presetLabel.className = 'f';
@@ -103,6 +138,9 @@ export function buildUi(main, more) {
   set(saved || presetSettings('default'), { persist: false });
   return {
     get, set, save,
+    where: () => where.querySelector('select').value,
+    race: () => where.querySelector('select').value === 'server' && race.querySelector('select').value === 'race',
+    onWhere(fn) { onWhere = fn; },
     // while a shared seed's settings are showing, don't overwrite the
     // player's own saved choices
     hold(on) { saving = !on; },

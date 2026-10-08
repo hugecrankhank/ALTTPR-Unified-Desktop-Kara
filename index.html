@@ -69,6 +69,7 @@
   /* the generator choice: alttpr.com's settings or Kara's */
   body:not(.gen-kara) #rando-bar .kara-only, body.gen-kara #rando-bar .vt-only { display: none !important; }
   #r-kara { display: contents; }
+  #rando-bar label.f[hidden] { display: none; }
   #r-kara-more-body { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
   #rando-bar .kara-group { align-items: flex-end; }
   #rando-bar .kara-group-title { flex-basis: 100%; color: var(--text); font-size: 11px; text-transform: uppercase;
@@ -444,7 +445,7 @@
     </label>
     <div class="f paste-field">Load a seed
       <div class="sprite-row">
-        <input type="text" id="r-paste" placeholder="Seed link, alttpr.com link, or number" autocomplete="off" spellcheck="false">
+        <input type="text" id="r-paste" placeholder="Seed link, alttpr.com or gwaa.kiwi link, or number" autocomplete="off" spellcheck="false">
         <button type="button" id="r-paste-go" title="Load and play the seed you pasted">Load</button>
       </div>
     </div>

@@ -145,3 +145,85 @@ export function presetOf(settings) {
   const p = PRESETS.find((x) => JSON.stringify(presetSettings(x.id)) === s);
   return p ? p.id : '';
 }
+
+// ── Kara's server (api.alttpr.gwaa.kiwi), with her permission ────────────────
+// Seeds made there are the same games her site makes, race seeds keep their
+// spoiler on her server, and her seed links (alttpr.gwaa.kiwi/seed/…) load
+// here. Her site has to allow this site's address (CORS) for the browser to
+// reach it.
+export const KARA_API = 'https://api.alttpr.gwaa.kiwi';
+export const KARA_SITE = 'https://alttpr.gwaa.kiwi';
+
+export function siteLink(id) { return `${KARA_SITE}/seed/${id}`; }
+
+/** "https://alttpr.gwaa.kiwi/seed/AbC123xyZ9" (or without https://) -> the id. */
+export function gwaaId(text) {
+  const m = String(text || '').trim().match(/alttpr\.gwaa\.kiwi\/seed\/([A-Za-z0-9]{10})\b/);
+  return m ? m[1] : null;
+}
+
+function serverError(e) {
+  if (e && e.name === 'AbortError') { const x = new Error('Stopped.'); x.cancelled = true; return x; }
+  if (e instanceof TypeError) {
+    const x = new Error('Kara\'s server couldn\'t be reached from here (it may not allow this site yet, or it\'s offline).');
+    x.unreachable = true;
+    return x;
+  }
+  return e;
+}
+
+/** Ask her server for a seed: its id. */
+export async function serverGenerate(settings, race, signal) {
+  let r;
+  try {
+    r = await fetch(`${KARA_API}/generate`, {
+      method: 'POST', signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ randomizer: 'base', race: race ? 'race' : 'normal', ...normalize(settings) }),
+    });
+  } catch (e) { throw serverError(e); }
+  const text = (await r.text()).trim().replace(/^"|"$/g, '');
+  if (!r.ok || !/^[A-Za-z0-9]{10}$/.test(text)) throw new Error(`Kara's server didn't accept those settings (${r.status}).`);
+  return text;
+}
+
+/** A seed from her server, waiting while it's still being made: { settings, meta, patch, spoiler, created }. */
+export async function serverSeed(id, { signal, onWait } = {}) {
+  const started = Date.now();
+  for (;;) {
+    let r;
+    try { r = await fetch(`${KARA_API}/seed/${id}`, { signal }); } catch (e) { throw serverError(e); }
+    if (r.status === 409 || r.status === 202) {
+      if (Date.now() - started > 10 * 60 * 1000) throw new Error('Kara\'s server is taking too long with this seed. Try its link again later.');
+      if (onWait) onWait(Date.now() - started);
+      await new Promise((res, rej) => {
+        const t = setTimeout(res, 2000);
+        if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(serverError({ name: 'AbortError' })); }, { once: true });
+      });
+      continue;
+    }
+    let data = null;
+    try { data = await r.json(); } catch (e) {}
+    if (r.ok && data && data.patch) return data;
+    if (data && data.retry) throw new Error('Kara\'s server couldn\'t make this seed with these settings. Try again, or change a setting.');
+    if (r.status === 404) throw new Error('Kara\'s site has no seed with that id.');
+    throw new Error(`Kara's server didn't send the seed (${r.status}).`);
+  }
+}
+
+/**
+ * The ROM for a seed from her server, the way her site's seed page builds it:
+ * her patch onto the Japanese 1.0 ROM, then her page's defaults for the two
+ * options this app doesn't offer (fast fanfare off, collection rate shown
+ * where the goal allows it). Cosmetics and the checksum are the caller's.
+ */
+export function serverRom(jp, data) {
+  const bin = atob(data.patch);
+  const patch = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) patch[i] = bin.charCodeAt(i);
+  const rom = applyBps(jp.subarray(0, 0x100000), patch);
+  rom[0x1800AF] = 0x10;
+  const goal = data.settings && data.settings.goal;
+  if (!['triforce_hunt', 'trinity', 'ganon_hunt'].includes(goal)) rom[0x180039] = 0x01;
+  return rom;
+}

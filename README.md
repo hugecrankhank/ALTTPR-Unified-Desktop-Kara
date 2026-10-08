@@ -129,7 +129,25 @@ shuffle. The main ones are in the bar; the rest are under **More Kara settings**
 Hover a setting for her help text. **Generate & Play** works as usual and uses
 the same Base ROM, sprite, MSU-1 pack and ROM options.
 
-How it works:
+**Made by** picks where seeds come from:
+
+- **Kara's server** (the default, with Kara's permission): the app asks
+  api.alttpr.gwaa.kiwi for the seed, exactly as her site does, so the seeds are
+  the same games her site makes and they open on her site too. **Seed type →
+  Race** makes a race seed with her race setting: its spoiler stays on her
+  server. **Share seed** copies the seed's alttpr.gwaa.kiwi link, and pasting
+  such a link into **Load a seed** plays it here. The ROM is built as her seed
+  page builds it: her patch onto your Japanese 1.0 ROM, then the options her page
+  offers (sprite, heart beep, quickswap, music off for an MSU pack) with her
+  page's defaults for the rest. Nothing else is written to her seeds; menu speed
+  is hidden for them because her site doesn't offer it. If her server can't be
+  reached, a normal seed is made in the browser instead (with a note), and a
+  race seed isn't made at all. Her server only answers this app once her site
+  allows its address, `https://hugecrankhank.github.io`.
+- **This browser**: her generator runs here, described below. Also used when
+  you type a seed number, since her server picks its own.
+
+How making seeds in the browser works:
 
 - Her generator ([alttpr-python](https://git.gwaa.kiwi/alttpr-gwaa-kiwi/alttpr-python),
   MIT, built on Aerinon's Door Randomizer and codemann8's Overworld Randomizer)
@@ -155,10 +173,10 @@ How it works:
   same game for everyone (checked: same ROM byte for byte, in separate browsers),
   so compare the five-item code as usual. Every seed is made in a fresh Python
   with a fixed hash seed, which is what makes that work.
-- Seeds made here are not the same games as seeds made on alttpr.gwaa.kiwi with
-  the same number, because Python there runs on a different platform. Links
-  from her site (alttpr.gwaa.kiwi/seed/…) can't be loaded here: those seeds are
-  stored on her server.
+- Seeds made in the browser are not the same games as seeds made on
+  alttpr.gwaa.kiwi with the same number, because Python there runs on a
+  different platform. Their race links are honor system (the spoiler is hidden,
+  not sealed); for a real race, use **Made by → Kara's server** and **Race**.
 - **Tracker.** Hutch's tracker is told what it understands: world state,
   shuffled maps, compasses and keys, universal keys, entrance shuffle, shops,
   pottery, enemy drops, pseudo boots and the mirror scroll. It doesn't follow
