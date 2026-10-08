@@ -196,8 +196,12 @@ export async function serverSeed(id, { signal, onWait } = {}) {
     if (r.status === 409 || r.status === 202) {
       if (Date.now() - started > 10 * 60 * 1000) throw new Error('Kara\'s server is taking too long with this seed. Try its link again later.');
       if (onWait) onWait(Date.now() - started);
+      // gentle on her server (she asked): every 3 s at first, slowing to
+      // every 10 s for seeds that take a while
+      const waited = Date.now() - started;
+      const every = waited < 30000 ? 3000 : waited < 120000 ? 5000 : 10000;
       await new Promise((res, rej) => {
-        const t = setTimeout(res, 2000);
+        const t = setTimeout(res, every);
         if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(serverError({ name: 'AbortError' })); }, { once: true });
       });
       continue;
