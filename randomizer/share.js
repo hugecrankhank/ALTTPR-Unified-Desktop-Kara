@@ -74,10 +74,10 @@ const CODE = [
   ['Mushroom', 'mushroom1'], ['Magic Powder', 'powder10'], ['Ice Rod', 'icerod1'], ['Pendant', 'pendant1'],
   ['Bombos', 'bombos10'], ['Ether', 'ether10'], ['Quake', 'quake10'], ['Lamp', 'lamp1'],
   ['Hammer', 'hammer1'], ['Shovel', 'shovel1'], ['Flute', 'flute10'], ['Bug Net', 'net1'],
-  ['Book', 'book1'], ['Empty Bottle', 'bottle1'], ['Green Potion', null], ['Cane of Somaria', 'caneofsomaria1'],
+  ['Book', 'book1'], ['Empty Bottle', 'bottle1'], ['Green Potion', 'bottle_green'], ['Cane of Somaria', 'caneofsomaria1'],
   ['Cape', 'cape1'], ['Mirror', 'mirror1'], ['Boots', 'boots1'], ['Gloves', 'gloves1'],
   ['Flippers', 'flippers1'], ['Moon Pearl', 'moonpearl1'], ['Shield', 'shield1'], ['Tunic', 'mail1'],
-  ['Heart', null], ['Map', 'map1'], ['Compass', 'compass1'], ['Big Key', 'bigkey1'],
+  ['Heart', 'randomizer/icons/heart.svg'], ['Map', 'map1'], ['Compass', 'compass1'], ['Big Key', 'bigkey1'],
 ];
 
 export function codeForSeed(seed) { return hash_array(seed % 33554431); }
@@ -107,7 +107,8 @@ export function renderCode(el, code) {
     s.title = name;
     if (icon) {
       const img = document.createElement('img');
-      img.src = `tracker/items/${icon}.png`; img.alt = name;
+      img.src = icon.includes('/') ? icon : `tracker/items/${icon}.png`;   // a path, or a tracker item
+      img.alt = name;
       s.appendChild(img);
     }
     const t = document.createElement('small');
